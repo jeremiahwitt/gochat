@@ -2,14 +2,21 @@ package main
 
 import (
 	"fmt"
+	"net"
 )
 
 func main() {
 	fmt.Print("Hello world!")
 	sender := new(Sender)
-	go sender.Run()
-	// TODO go receiver.Run()
+	receiver := new(Receiver)
+	ip := net.ParseIP("255.255.255.255")
 
+	sender.IPAddress = ip
+	sender.Port = 11211
+	receiver.Port = 11211
+	go sender.Run()
+	go receiver.Run()
+	// TODO maybe listen to these as channels, wait for them to eventually return and then quit?
 	sleepForever()
 }
 
