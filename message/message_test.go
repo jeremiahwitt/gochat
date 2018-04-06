@@ -18,7 +18,3 @@ func TestMessageString(t *testing.T) {
 
 	assert.Equal(t, expectedString, generatedString)
 }
-
-func TestSomething(t *testing.T) {
-	assert.True(t, true, "True is true!")
-}

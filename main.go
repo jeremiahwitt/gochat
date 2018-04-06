@@ -11,6 +11,7 @@ func main() {
 	receiver := new(Receiver)
 	ip := net.ParseIP("255.255.255.255")
 
+	sender.UserName = "JoeBloe"
 	sender.IPAddress = ip
 	sender.Port = 11211
 	receiver.Port = 11211

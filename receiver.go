@@ -4,6 +4,7 @@ import (
 	"net"
 	"strconv"
 	"fmt"
+	"./message"
 )
 
 // The Receiver receives messages from the network and displays them to the user
@@ -37,7 +38,8 @@ func (r Receiver) Run() {
 		}
 
 		receivedString := string(buffer[0:numBytes])
-		fmt.Println("Got string: " + receivedString) // TODO remove
+		message := message.ParseMessage(receivedString)
+		fmt.Println("Got string: " + message.Message + " from " + message.Username) // TODO remove
 		fmt.Println(senderAddr) // TODO remove
 		// TODO generateMessage(receivedString, senderAddr)
 		// TODO printMessage()
