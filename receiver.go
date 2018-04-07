@@ -5,6 +5,7 @@ import (
 	"strconv"
 	"fmt"
 	"./message"
+	"log"
 )
 
 // The Receiver receives messages from the network and displays them to the user
@@ -17,14 +18,14 @@ func (r Receiver) Run() {
 	addr, err := net.ResolveUDPAddr("udp", ":" + strconv.Itoa(r.Port))
 
 	if err != nil {
-		fmt.Errorf("Could not listen for incoming messages with the desired port: %d", r.Port)
+		log.Fatalf("Could not listen for incoming messages with the desired port: %d", r.Port)
 	}
 
 	// Try to setup a UDPConn that we can listen to for incoming messages
 	listener, err := net.ListenUDP("udp", addr)
 
 	if err != nil {
-		fmt.Errorf("Could not listen for incoming UDP messages: %v", err)
+		log.Fatalf("Could not listen for incoming UDP messages: %v", err)
 	}
 
 	// Make a buffer, and then start reading messages!
@@ -38,13 +39,25 @@ func (r Receiver) Run() {
 		}
 
 		receivedString := string(buffer[0:numBytes])
-		message := message.ParseMessage(receivedString)
-		fmt.Println("Got string: " + message.Message + " from " + message.Username) // TODO remove
+		m := message.ParseMessage(receivedString)
+		switch(m.Command) {
+		case message.JOIN:
+			r.handleJoinMessage(m)
+			break
+		case message.TALK:
+			fmt.Println("Got string: " + m.Message + " from " + m.Username) // TODO remove
+
+		}
 		fmt.Println(senderAddr) // TODO remove
 		// TODO generateMessage(receivedString, senderAddr)
 		// TODO printMessage()
 
 	}
 
+}
+
+// Executed by the Receiver upon receipt of a JOIN message
+func (r Receiver) handleJoinMessage(m *message.Message) {
+	log.Printf("%s has joined!", m.Username)
 }
 

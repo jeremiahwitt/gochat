@@ -19,6 +19,7 @@ type Sender struct {
 // Will cause the Sender to start and do its thing
 func (s Sender) Run() {
 
+	s.broadcastJoinMessage()
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		messageContents := scanner.Text()
@@ -26,6 +27,15 @@ func (s Sender) Run() {
 		message := s.buildMessage(messageContents)
 		s.sendMessage(message.String())
 	}
+}
+
+// Broadcasts to the network that the sender has joined
+func (sender Sender) broadcastJoinMessage() {
+	m := new(message.Message)
+	m.Command = message.JOIN
+	m.Username = sender.UserName
+	m.Message = ""
+	sender.sendMessage(m.String())
 }
 
 // Constructs a message using the provided String as the contents of the message
