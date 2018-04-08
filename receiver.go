@@ -40,24 +40,25 @@ func (r Receiver) Run() {
 
 		receivedString := string(buffer[0:numBytes])
 		m := message.ParseMessage(receivedString)
-		switch(m.Command) {
+
+		switch m.Command {
 		case message.JOIN:
 			r.handleJoinMessage(m)
 			break
 		case message.TALK:
-			fmt.Println("Got string: " + m.Message + " from " + m.Username) // TODO remove
-
+			r.handleTalkMessage(m)
 		}
 		fmt.Println(senderAddr) // TODO remove
-		// TODO generateMessage(receivedString, senderAddr)
-		// TODO printMessage()
-
 	}
-
 }
 
 // Executed by the Receiver upon receipt of a JOIN message
 func (r Receiver) handleJoinMessage(m *message.Message) {
 	log.Printf("%s has joined!", m.Username)
+}
+
+// Executed by the Receiver upon receipt of a TALK message
+func (r Receiver) handleTalkMessage(m *message.Message) {
+	log.Printf("[%s]: %s", m.Username, m.Message)
 }
 
