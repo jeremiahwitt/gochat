@@ -15,18 +15,24 @@ type Sender struct {
 	UserName string // The username of the sender
 	IPAddress net.IP // The IP address of the sender
 	Port int // The port being used by the sender
+	StopChannel chan bool // Channel which will be used to indicate to the driver that the program can shut down
 }
 
+const (
+	COMMAND_HEAD = "/"
+)
+
 // Will cause the Sender to start and do its thing
-func (s Sender) Run() {
+func (s Sender) Run(stopChannel chan bool) {
+	s.StopChannel = stopChannel
 
 	s.broadcastJoinMessage()
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		inputText := scanner.Text()
 
-		if strings.HasPrefix(inputText, "/") {
-
+		if strings.HasPrefix(inputText, COMMAND_HEAD) {
+			s.handleUserCommand(inputText)
 		} else {
 			message := s.buildMessage(inputText)
 			s.sendMessage(message.String())
@@ -35,13 +41,37 @@ func (s Sender) Run() {
 	}
 }
 
+// This function will be used when the User requests a specific command, starting with '/' (ie /leave)
+func (s Sender) handleUserCommand(input string) {
+	switch strings.TrimPrefix(input, COMMAND_HEAD) {
+	case "leave":
+		s.sendLeaveMessage()
+	}
+}
+
+// Will broadcast a LEAVE message, and cause the user to leave the chat!
+func (s Sender) sendLeaveMessage() {
+	m := s.constructEmptyMessageWithCommand(message.LEAVE)
+	s.sendMessage(m.String())
+
+	// Indicate through the StopChannel that we can exit now!
+	s.StopChannel <- true
+}
+
 // Broadcasts to the network that the sender has joined
-func (sender Sender) broadcastJoinMessage() {
+func (s Sender) broadcastJoinMessage() {
+	m := s.constructEmptyMessageWithCommand(message.JOIN)
+	s.sendMessage(m.String())
+}
+
+// Builds an empty Message with the requested command
+func (s Sender) constructEmptyMessageWithCommand(command message.MessageCommand) *message.Message{
 	m := new(message.Message)
-	m.Command = message.JOIN
-	m.Username = sender.UserName
+	m.Command = command
+	m.Username = s.UserName
 	m.Message = ""
-	sender.sendMessage(m.String())
+
+	return m
 }
 
 // Constructs a message using the provided String as the contents of the message
@@ -55,7 +85,6 @@ func (s Sender) buildMessage(messageContents string) *message.Message {
 
 // Sends the message out
 func (s Sender) sendMessage(contents string) {
-	// TODO implement
 	// Send via UDP to the IP and Port
 	broadcastAddr, err := net.ResolveUDPAddr("udp", s.IPAddress.String() + ":" + strconv.Itoa(s.Port))
 
@@ -71,3 +100,5 @@ func (s Sender) sendMessage(contents string) {
 
 	udpSocket.Write([]byte(contents))
 }
+
+

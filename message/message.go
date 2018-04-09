@@ -11,6 +11,8 @@ type MessageCommand string
 const (
 	TALK MessageCommand = "TALK"
 	JOIN MessageCommand = "JOIN"
+	LEAVE MessageCommand = "LEAVE"
+	UNKNOWN MessageCommand = "UNKNOWN"
 )
 
 // Representation of a Message as a struct
