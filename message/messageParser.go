@@ -27,6 +27,10 @@ func getCommand(rcvdMessage string) MessageCommand {
 		return JOIN
 	case "LEAVE":
 		return LEAVE
+	case "WHO":
+		return WHO
+	case "QUIT":
+		return QUIT
 	default:
 		return UNKNOWN
 	}

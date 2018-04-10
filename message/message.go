@@ -12,6 +12,8 @@ const (
 	TALK MessageCommand = "TALK"
 	JOIN MessageCommand = "JOIN"
 	LEAVE MessageCommand = "LEAVE"
+	WHO MessageCommand = "WHO"
+	QUIT MessageCommand = "QUIT"
 	UNKNOWN MessageCommand = "UNKNOWN"
 )
 

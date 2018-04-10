@@ -46,6 +46,11 @@ func (s Sender) handleUserCommand(input string) {
 	switch strings.TrimPrefix(input, COMMAND_HEAD) {
 	case "leave":
 		s.sendLeaveMessage()
+		s.sendQuitMessage()
+		break
+	case "who":
+		s.sendWhoMessage()
+		break
 	}
 }
 
@@ -56,6 +61,18 @@ func (s Sender) sendLeaveMessage() {
 
 	// Indicate through the StopChannel that we can exit now!
 	s.StopChannel <- true
+}
+
+// Will send a QUIT message to the local receiver
+func (s Sender) sendQuitMessage() {
+	m := s.constructEmptyMessageWithCommand(message.QUIT)
+	s.sendLocalMessage(m.String())
+}
+
+// Will send a WHO message only to the local receiver
+func (s Sender) sendWhoMessage() {
+	m := s.constructEmptyMessageWithCommand(message.WHO)
+	s.sendLocalMessage(m.String())
 }
 
 // Broadcasts to the network that the sender has joined
@@ -91,13 +108,26 @@ func (s Sender) sendMessage(contents string) {
 	if err != nil {
 		fmt.Errorf("Could not broadcast: %v", err)
 	}
+	sendMessageToAddress(broadcastAddr, contents)
+}
 
-	udpSocket, err := net.Dial("udp", broadcastAddr.String())
+func (s Sender) sendLocalMessage(contents string) {
+	// Send via UDP to the IP and Port
+	broadcastAddr, err := net.ResolveUDPAddr("udp", "0.0.0.0:" + strconv.Itoa(s.Port))
 
+	if err != nil {
+		fmt.Errorf("Could not broadcast: %v", err)
+	}
+
+	sendMessageToAddress(broadcastAddr, contents)
+}
+
+func sendMessageToAddress(addr *net.UDPAddr, contents string) {
+
+	udpSocket, err := net.Dial("udp", addr.String())
 	if err != nil {
 		fmt.Errorf("Could not use the UDP socket: %v", err)
 	}
-
 	udpSocket.Write([]byte(contents))
 }
 

@@ -5,6 +5,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMessageParsing_Who(t *testing.T) {
+	receivedString := "Command: WHO\nUsername: Jeremiah\nMessage: Hello!\n\n"
+	expectedCommand := WHO
+	expectedUsername := "Jeremiah"
+	expectedMessage := "Hello!"
+
+	parsedMessage := ParseMessage(receivedString)
+	assert.Equal(t, expectedCommand, parsedMessage.Command)
+	assert.Equal(t, expectedUsername, parsedMessage.Username )
+	assert.Equal(t, expectedMessage, parsedMessage.Message )
+}
+
 func TestMessageParsing_Leave(t *testing.T) {
 	receivedString := "Command: LEAVE\nUsername: Jeremiah\nMessage: Hello!\n\n"
 	expectedCommand := LEAVE
