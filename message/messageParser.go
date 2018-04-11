@@ -31,6 +31,8 @@ func getCommand(rcvdMessage string) MessageCommand {
 		return WHO
 	case "QUIT":
 		return QUIT
+	case "PING":
+		return PING
 	default:
 		return UNKNOWN
 	}

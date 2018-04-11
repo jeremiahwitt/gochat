@@ -14,6 +14,7 @@ type Receiver struct {
 	Port int
 	StopChannel chan bool
 	users map[string]bool
+	Sender *Sender
 }
 
 func (r Receiver) Run(stopChan chan bool) {
@@ -49,6 +50,8 @@ func (r Receiver) Run(stopChan chan bool) {
 			break
 		case message.QUIT:
 			r.handleQuitMessage(m)
+		case message.PING:
+			r.handlePingMessage(m)
 		}
 	}
 }
@@ -74,6 +77,7 @@ func (r Receiver) handleJoinMessage(m *message.Message) {
 
 	// Add the user to the list of users who are present
 	r.users[m.Username] = true
+	r.Sender.SendPing()
 }
 
 // Executed by the Receiver upon receipt of a TALK message
@@ -106,5 +110,10 @@ func (r Receiver) handleWhoMessage(m *message.Message) {
 func (r Receiver) handleQuitMessage(m *message.Message) {
 	fmt.Print("Bye now!")
 	r.StopChannel <- true
+}
+
+// Executed upon receipt of PING message - adds username to list of users
+func (r Receiver) handlePingMessage(m *message.Message) {
+	r.users[m.Username] = true
 }
 

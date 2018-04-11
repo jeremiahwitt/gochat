@@ -14,6 +14,7 @@ const (
 	LEAVE MessageCommand = "LEAVE"
 	WHO MessageCommand = "WHO"
 	QUIT MessageCommand = "QUIT"
+	PING MessageCommand = "PING"
 	UNKNOWN MessageCommand = "UNKNOWN"
 )
 

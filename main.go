@@ -20,6 +20,7 @@ func main() {
 	sender.IPAddress = ip
 	sender.Port = 11211
 	receiver.Port = 11211
+	receiver.Sender = sender
 
 	// Create channels that the Sender and Receivergoroutine can use to stop the program
 	senderStopChannel := make(chan bool)

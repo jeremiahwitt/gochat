@@ -22,6 +22,12 @@ const (
 	COMMAND_HEAD = "/"
 )
 
+// Broadcasts a PING message - not private so that the Receiver can call this!
+func (s *Sender) SendPing() {
+	m := s.constructEmptyMessageWithCommand(message.PING)
+	s.sendMessage(m.String())
+}
+
 // Will cause the Sender to start and do its thing
 func (s Sender) Run(stopChannel chan bool) {
 	s.StopChannel = stopChannel
