@@ -5,6 +5,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestMessageParsing_PRIVATE_TALK(t *testing.T) {
+	receivedString := "Command: PRIVATE-TALK\nUsername: Jeremiah\nMessage: Hello!\n\n"
+	expectedCommand := PRIVATE_TALK
+	expectedUsername := "Jeremiah"
+	expectedMessage := "Hello!"
+
+	parsedMessage := ParseMessage(receivedString)
+	assert.Equal(t, expectedCommand, parsedMessage.Command)
+	assert.Equal(t, expectedUsername, parsedMessage.Username )
+	assert.Equal(t, expectedMessage, parsedMessage.Message )
+}
+
 func TestMessageParsing_PING(t *testing.T) {
 	receivedString := "Command: PING\nUsername: Jeremiah\nMessage: Hello!\n\n"
 	expectedCommand := PING

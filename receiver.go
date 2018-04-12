@@ -12,20 +12,21 @@ import (
 // The Receiver receives messages from the network and displays them to the user
 type Receiver struct {
 	Port int
+	UserName string
 	StopChannel chan bool
-	users map[string]bool
+	Users map[string] *net.IP
 	Sender *Sender
 }
 
 func (r Receiver) Run(stopChan chan bool) {
-	r.users = make(map[string]bool)
+	r.Users = make(map[string] *net.IP)
 	r.StopChannel = stopChan
 	listener := setupUDPListener(r)
 
 	// Make a buffer, and then start reading messages!
 	buffer := make([]byte, 2056)
 	for {
-		numBytes, _, err := listener.ReadFromUDP(buffer)
+		numBytes, addr, err := listener.ReadFromUDP(buffer)
 
 		// If there was an error, print it out, then listen for the next message
 		if err != nil {
@@ -37,7 +38,7 @@ func (r Receiver) Run(stopChan chan bool) {
 
 		switch m.Command {
 		case message.JOIN:
-			r.handleJoinMessage(m)
+			r.handleJoinMessage(m, addr)
 			break
 		case message.TALK:
 			r.handleTalkMessage(m)
@@ -51,7 +52,9 @@ func (r Receiver) Run(stopChan chan bool) {
 		case message.QUIT:
 			r.handleQuitMessage(m)
 		case message.PING:
-			r.handlePingMessage(m)
+			r.handlePingMessage(m, addr)
+		case message.PRIVATE_TALK:
+			r.handlePrivateMessage(m, addr)
 		}
 	}
 }
@@ -72,11 +75,11 @@ func setupUDPListener(r Receiver) *net.UDPConn {
 }
 
 // Executed by the Receiver upon receipt of a JOIN message
-func (r Receiver) handleJoinMessage(m *message.Message) {
+func (r Receiver) handleJoinMessage(m *message.Message, addr *net.UDPAddr) {
 	log.Printf("%s has joined!", m.Username)
 
 	// Add the user to the list of users who are present
-	r.users[m.Username] = true
+	r.Users[m.Username] = &addr.IP
 	r.Sender.SendPing()
 }
 
@@ -90,14 +93,14 @@ func (r Receiver) handleLeaveMessage(m *message.Message) {
 	log.Printf("%s has left the chat!", m.Username)
 
 	// Remove the user from the list of all users
-	delete(r.users, m.Username)
+	delete(r.Users, m.Username)
 }
 
 // Executed by the Receiver upon receipt of a WHO message. Prints
 // the name of all users present
 func (r Receiver) handleWhoMessage(m *message.Message) {
 	allUsers := ""
-	for name, _ := range r.users {
+	for name, _ := range r.Users {
 		allUsers += name + ", "
 	}
 
@@ -113,7 +116,35 @@ func (r Receiver) handleQuitMessage(m *message.Message) {
 }
 
 // Executed upon receipt of PING message - adds username to list of users
-func (r Receiver) handlePingMessage(m *message.Message) {
-	r.users[m.Username] = true
+func (r Receiver) handlePingMessage(m *message.Message, addr *net.UDPAddr) {
+	r.Users[m.Username] = &addr.IP
 }
 
+// Executed when the receiver gets a private message
+func (r Receiver) handlePrivateMessage(m *message.Message, addr *net.UDPAddr) {
+
+	// If received locally, then we'll forward it out to the proper address. Otherwise, we'll print it!
+	if addr.IP.Equal(net.ParseIP("127.0.0.1")) {
+		if r.Users[m.Username] == nil {
+			log.Printf("%s is not connected! Cannot send them a private message.", m.Username)
+			return
+		}
+
+		udpAddr, err := net.ResolveUDPAddr("udp", r.Users[m.Username].String() + ":" + strconv.Itoa(r.Port))
+		if err != nil {
+			log.Printf("Could not send private message to %s", m.Username)
+		} else {
+			m.Username = r.UserName // Update the username in the message!
+			SendMessageToAddress(udpAddr, m.String())
+		}
+	} else {
+		log.Printf("[%s] (PRIVATE): %s", m.Username, m.Message)
+	}
+}
+
+
+// Provides access to the s
+func (r *Receiver) GetUserIP(username string) string {
+	log.Print(r.Users)
+	return r.Users[username].String()
+}

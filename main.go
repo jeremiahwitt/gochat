@@ -17,10 +17,13 @@ func main() {
 	ip := net.ParseIP("255.255.255.255")
 
 	sender.UserName = username
+	receiver.UserName = username
 	sender.IPAddress = ip
 	sender.Port = 11211
 	receiver.Port = 11211
+
 	receiver.Sender = sender
+	sender.Receiver = receiver
 
 	// Create channels that the Sender and Receivergoroutine can use to stop the program
 	senderStopChannel := make(chan bool)

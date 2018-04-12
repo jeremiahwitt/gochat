@@ -33,6 +33,8 @@ func getCommand(rcvdMessage string) MessageCommand {
 		return QUIT
 	case "PING":
 		return PING
+	case "PRIVATE-TALK":
+		return PRIVATE_TALK
 	default:
 		return UNKNOWN
 	}

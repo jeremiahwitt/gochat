@@ -15,6 +15,7 @@ const (
 	WHO MessageCommand = "WHO"
 	QUIT MessageCommand = "QUIT"
 	PING MessageCommand = "PING"
+	PRIVATE_TALK MessageCommand = "PRIVATE-TALK"
 	UNKNOWN MessageCommand = "UNKNOWN"
 )
 
